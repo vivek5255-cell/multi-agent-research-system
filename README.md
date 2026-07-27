@@ -32,11 +32,7 @@ Built with **LangChain**, **LangGraph**, **Google Gemini**, **Tavily Search API*
 
 ---
 
-## 🤖 Multi-Agent Workflow
 
-![Workflow](images/workflow.png)
-
----
 
 # ✨ Features
 
