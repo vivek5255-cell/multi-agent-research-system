@@ -9,18 +9,15 @@ from langchain_core.output_parsers import StrOutputParser
 from tools import web_search, scrape_url
 
 # Load .env file
-load_dotenv()
-
 key = os.getenv("GOOGLE_API_KEY")
+tavily = os.getenv("TAVILY_API_KEY")
 
-if key:
-    print("✅ Google API Key loaded successfully.")
-else:
-    print("❌ Google API Key NOT FOUND.")
+print("Google Key:", "Loaded" if key else "Missing")
+print("Tavily Key:", "Loaded" if tavily else "Missing")
 
 # Gemini Model
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3.6-flash",
+    model="gemini-2.5-flash",
     google_api_key=os.getenv("GOOGLE_API_KEY"),
     temperature=0,
 )
