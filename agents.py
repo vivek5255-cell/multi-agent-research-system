@@ -10,11 +10,17 @@ from tools import web_search, scrape_url
 
 # Load .env file
 load_dotenv()
-print("GOOGLE_API_KEY =", os.getenv("GOOGLE_API_KEY"))
+
+key = os.getenv("GOOGLE_API_KEY")
+
+if key:
+    print("✅ Google API Key loaded successfully.")
+else:
+    print("❌ Google API Key NOT FOUND.")
 
 # Gemini Model
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3.6-flash",
+    model="gemini-2.5-flash",
     google_api_key=os.getenv("GOOGLE_API_KEY"),
     temperature=0,
 )
