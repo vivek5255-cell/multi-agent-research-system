@@ -6,11 +6,7 @@ Built with **LangChain**, **LangGraph**, **Google Gemini**, **Tavily Search API*
 
 ---
 
-# 🚀 Live Demo
 
-> Coming Soon
-
----
 
 # 📸 Screenshots
 
