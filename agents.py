@@ -14,10 +14,11 @@ print("GOOGLE_API_KEY =", os.getenv("GOOGLE_API_KEY"))
 
 # Gemini Model
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3-flash-preview",
+    model="gemini-3.6-flash",
     google_api_key=os.getenv("GOOGLE_API_KEY"),
     temperature=0,
 )
+
 
 # -----------------------------
 # Search Agent
