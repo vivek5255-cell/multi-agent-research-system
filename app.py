@@ -394,7 +394,9 @@ with col_pipeline:
     step_card("04", "Critic Chain",  s("critic"), "Reviews & scores the report")
 
 
+
 # ── Run pipeline ──────────────────────────────────────────────────────────────
+
 if run_btn:
     if not topic.strip():
         st.warning("Please enter a research topic first.")
@@ -404,70 +406,73 @@ if run_btn:
         st.session_state.done = False
         st.rerun()
 
+
 if st.session_state.running and not st.session_state.done:
+
     results = {}
-    topic_val = st.session_state.topic_input
+
     topic_val = st.session_state.get("topic_input", "").strip()
 
-if not topic_val:
-    st.error("No research topic provided.")
-    st.stop()
-
- 
- # ── Step 1: Search ──
-with st.spinner("🔍 Search Agent is working..."):
-    try:
-        search_agent = build_search_agent()
-
-        sr = search_agent.invoke({
-            "messages": [
-                (
-                    "user",
-                    f"Find recent, reliable and detailed information about: {topic_val}"
-                )
-            ]
-        })
-
-        results["search"] = sr["messages"][-1].content
-        st.session_state.results = dict(results)
-
-    except Exception as e:
-        st.error("❌ Search Agent Failed")
-        st.exception(e)
+    if not topic_val:
+        st.session_state.running = False
         st.stop()
 
-    # ── Step 2: Reader ──
-with st.spinner("📄 Reader Agent is scraping top resources..."):
-    try:
-        reader_agent = build_reader_agent()
+    # ── Step 1: Search ─────────────────────────────────────────
+    with st.spinner("🔍 Search Agent is working..."):
+        try:
+            search_agent = build_search_agent()
 
-        rr = reader_agent.invoke({
-            "messages": [
-                (
-                    "user",
-                    f"""Based on the following search results about '{topic_val}',
+            sr = search_agent.invoke({
+                "messages": [
+                    (
+                        "user",
+                        f"Find recent, reliable and detailed information about: {topic_val}"
+                    )
+                ]
+            })
+
+            results["search"] = sr["messages"][-1].content
+            st.session_state.results = dict(results)
+
+        except Exception as e:
+            st.error("❌ Search Agent Failed")
+            st.exception(e)
+            st.session_state.running = False
+            st.stop()
+
+    # ── Step 2: Reader ─────────────────────────────────────────
+    with st.spinner("📄 Reader Agent is scraping top resources..."):
+        try:
+            reader_agent = build_reader_agent()
+
+            rr = reader_agent.invoke({
+                "messages": [
+                    (
+                        "user",
+                        f"""Based on the following search results about '{topic_val}',
 pick the most relevant URL and scrape it.
 
 Search Results:
 
 {results['search'][:800]}
 """
-                )
-            ]
-        })
+                    )
+                ]
+            })
 
-        results["reader"] = rr["messages"][-1].content
-        st.session_state.results = dict(results)
+            results["reader"] = rr["messages"][-1].content
+            st.session_state.results = dict(results)
 
-    except Exception as e:
-        st.error("❌ Reader Agent Failed")
-        st.exception(e)
-        st.stop()
+        except Exception as e:
+            st.error("❌ Reader Agent Failed")
+            st.exception(e)
+            st.session_state.running = False
+            st.stop()
 
-    # ── Step 3: Writer ──
-with st.spinner("✍️ Writer is drafting the report..."):
-    try:
-        research_combined = f"""
+    # ── Step 3: Writer ─────────────────────────────────────────
+    with st.spinner("✍️ Writer is drafting the report..."):
+        try:
+            research_combined = f"""
 SEARCH RESULTS
 
 {results['search']}
@@ -479,30 +484,37 @@ SCRAPED CONTENT
 {results['reader']}
 """
 
-        results["writer"] = writer_chain.invoke({
-            "topic": topic_val,
-            "research": research_combined
-        })
+            results["writer"] = writer_chain.invoke({
+                "topic": topic_val,
+                "research": research_combined
+            })
 
-        st.session_state.results = dict(results)
+            st.session_state.results = dict(results)
 
-    except Exception as e:
-        st.error("❌ Writer Agent Failed")
-        st.exception(e)
-        st.stop()
-    # ── Step 4: Critic ──
-with st.spinner("🧐 Critic is reviewing the report..."):
-    try:
-        results["critic"] = critic_chain.invoke({
-            "report": results["writer"]
-        })
+        except Exception as e:
+            st.error("❌ Writer Chain Failed")
+            st.exception(e)
+            st.session_state.running = False
+            st.stop()
 
-        st.session_state.results = dict(results)
+    # ── Step 4: Critic ─────────────────────────────────────────
+    with st.spinner("🧐 Critic is reviewing the report..."):
+        try:
+            results["critic"] = critic_chain.invoke({
+                "report": results["writer"]
+            })
 
-    except Exception as e:
-        st.error("❌ Critic Agent Failed")
-        st.exception(e)
-        st.stop()
+            st.session_state.results = dict(results)
+
+        except Exception as e:
+            st.error("❌ Critic Chain Failed")
+            st.exception(e)
+            st.session_state.running = False
+            st.stop()
+
+    st.session_state.running = False
+    st.session_state.done = True
+    st.rerun()
 
 # ── Results display ───────────────────────────────────────────────────────────
 r = st.session_state.results
