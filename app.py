@@ -407,6 +407,11 @@ if run_btn:
 if st.session_state.running and not st.session_state.done:
     results = {}
     topic_val = st.session_state.topic_input
+    topic_val = st.session_state.get("topic_input", "").strip()
+
+if not topic_val:
+    st.error("No research topic provided.")
+    st.stop()
 
  
  # ── Step 1: Search ──
